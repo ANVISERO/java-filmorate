@@ -15,6 +15,7 @@
 	<description>Service that works with movies and user ratings</description>
 	<properties>
 		<java.version>11</java.version>
+		<lombok.version>1.18.30</lombok.version>
 	</properties>
 	<dependencies>
 		<!--spring-web-->
@@ -40,7 +41,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.30</version>
+			<version>${lombok.version}</version>
 		</dependency>
 
 		<!--validate-->

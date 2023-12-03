@@ -12,7 +12,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
-
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -29,17 +28,11 @@ public class FilmControllerTest {
     void setUp() {
         filmController = new FilmController();
         validator = Validation.buildDefaultValidatorFactory().getValidator();
+        init();
     }
 
     @Test
     void addFilm() {
-        film = Film.builder()
-                .name("Название")
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
-                .build();
-
         filmController.addFilm(film.toBuilder().build());
 
         assertEquals(1, filmController.getAllFilms().size(), "Неверное количество фильмов");
@@ -48,21 +41,12 @@ public class FilmControllerTest {
 
     @Test
     void updateFilm() {
-        film = Film.builder()
-                .name("Название")
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
-                .build();
-
         filmController.addFilm(film.toBuilder().build());
 
-        Film film1 = Film.builder()
+        Film film1 = film.toBuilder()
                 .id(1)
                 .name("Новое название")
                 .description("Новое описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
                 .build();
 
         filmController.updateFilm(film1.toBuilder().build());
@@ -73,13 +57,7 @@ public class FilmControllerTest {
 
     @Test
     void addFilmWithId() {
-        film = Film.builder()
-                .id(1)
-                .name("Название")
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
-                .build();
+        film = film.toBuilder().id(1).build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
             Set<ConstraintViolation<Film>> constraintViolations;
@@ -94,13 +72,6 @@ public class FilmControllerTest {
 
     @Test
     void updateFilmWithoutId() {
-        film = Film.builder()
-                .name("Название")
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
-                .build();
-
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
             Set<ConstraintViolation<Film>> constraintViolations;
             constraintViolations = validator.validate(film, OnUpdate.class, Default.class);
@@ -114,11 +85,7 @@ public class FilmControllerTest {
 
     @Test
     void validateFilmWithEmptyName() {
-        film = Film.builder()
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
-                .build();
+        film = film.toBuilder().name(null).build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
             Set<ConstraintViolation<Film>> constraintViolations;
@@ -133,13 +100,10 @@ public class FilmControllerTest {
 
     @Test
     void validateFilmWithDescriptionMoreThan200Symbols() {
-        film = Film.builder()
-                .name("Название")
+        film = film.toBuilder()
                 .description("Описание, очень очень очень очень очень очень очень очень очень очень очень очень " +
                         "очень очень очень очень очень очень очень очень очень очень очень очень очень очень очень " +
                         "очень очень очень очень очень очень очень очень очень очень очень очень длинное описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(30)
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -155,11 +119,8 @@ public class FilmControllerTest {
 
     @Test
     void validateFilmWithIncorrectReleaseDate() {
-        film = Film.builder()
-                .name("Название")
-                .description("Описание")
+        film = film.toBuilder()
                 .releaseDate(LocalDate.of(1895, 1, 1))
-                .duration(30)
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -175,10 +136,7 @@ public class FilmControllerTest {
 
     @Test
     void validateFilmWithNegativeDuration() {
-        film = Film.builder()
-                .name("Название")
-                .description("Описание")
-                .releaseDate(LocalDate.of(2000, 1, 1))
+        film = film.toBuilder()
                 .duration(-30)
                 .build();
 
@@ -191,5 +149,14 @@ public class FilmControllerTest {
         });
         assertEquals("Продолжительность фильма должна быть положительной", validationException.getMessage(),
                 "Некорректная валидация продолжительности фильма");
+    }
+
+    private void init() {
+        film = Film.builder()
+                .name("Название")
+                .description("Описание")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(30)
+                .build();
     }
 }

@@ -28,17 +28,11 @@ public class UserControllerTest {
     void setUp() {
         userController = new UserController();
         validator = Validation.buildDefaultValidatorFactory().getValidator();
+        init();
     }
 
     @Test
     void addUser() {
-        user = User.builder()
-                .email("1@gmail.com")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-
         userController.createUser(user.toBuilder().build());
 
         assertEquals(1, userController.getAllUsers().size(), "Неверное количество пользователей");
@@ -47,21 +41,12 @@ public class UserControllerTest {
 
     @Test
     void updateUser() {
-        user = User.builder()
-                .email("1@gmail.com")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-
         userController.createUser(user.toBuilder().build());
 
-        User user1 = User.builder()
+        User user1 = user.toBuilder()
                 .id(1)
-                .email("new1@gmail.com")
                 .login("Новый логин")
                 .name("Новое Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         userController.updateUser(user1.toBuilder().build());
@@ -72,12 +57,8 @@ public class UserControllerTest {
 
     @Test
     void addUserWithId() {
-        user = User.builder()
+        user = user.toBuilder()
                 .id(1)
-                .email("1@gmail.com")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -93,13 +74,6 @@ public class UserControllerTest {
 
     @Test
     void updateUserWithoutId() {
-        user = User.builder()
-                .email("1@gmail.com")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
             Set<ConstraintViolation<User>> constraintViolations;
             constraintViolations = validator.validate(user, OnUpdate.class, Default.class);
@@ -113,11 +87,8 @@ public class UserControllerTest {
 
     @Test
     void validateUserWithEmptyEmail() {
-        user = User.builder()
+        user = user.toBuilder()
                 .email("")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -133,11 +104,8 @@ public class UserControllerTest {
 
     @Test
     void validateUserWithIncorrectEmail() {
-        user = User.builder()
+        user = user.toBuilder()
                 .email("1gmail.com")
-                .login("Логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -153,11 +121,8 @@ public class UserControllerTest {
 
     @Test
     void validateUserWithEmptyLogin() {
-        user = User.builder()
-                .email("1@gmail.com")
+        user = user.toBuilder()
                 .login("")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -173,11 +138,8 @@ public class UserControllerTest {
 
     @Test
     void validateUserWithIncorrectLogin() {
-        user = User.builder()
-                .email("1@gmail.com")
+        user = user.toBuilder()
                 .login("Неправильный логин")
-                .name("Имя")
-                .birthday(LocalDate.of(2000, 1, 1))
                 .build();
 
         ValidationException validationException = assertThrows(ValidationException.class, () -> {
@@ -193,10 +155,7 @@ public class UserControllerTest {
 
     @Test
     void validateUserWithIncorrectBirthday() {
-        user = User.builder()
-                .email("1@gmail.com")
-                .login("Логин")
-                .name("Имя")
+        user = user.toBuilder()
                 .birthday(LocalDate.of(2030, 1, 1))
                 .build();
 
@@ -209,5 +168,14 @@ public class UserControllerTest {
         });
         assertEquals("Дата рождения не может быть в будущем", validationException.getMessage(),
                 "Некорректная валидация даты рождения пользователя");
+    }
+
+    private void init() {
+        user = User.builder()
+                .email("1@gmail.com")
+                .login("Логин")
+                .name("Имя")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
     }
 }
