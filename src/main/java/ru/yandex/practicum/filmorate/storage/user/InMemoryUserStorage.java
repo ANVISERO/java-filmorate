@@ -51,7 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", id);
             throw new NotFoundException("Пользователь с идентификатором " + id + " не существует!");
         }
-        log.info("{} {}",users.get(id), InMemoryUserStorage.class);
+        log.info("{} {}", users.get(id), InMemoryUserStorage.class);
         return users.get(id).toBuilder().build();
     }
 
