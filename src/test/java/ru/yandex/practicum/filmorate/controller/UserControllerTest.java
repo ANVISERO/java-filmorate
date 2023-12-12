@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
@@ -13,6 +16,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,13 +26,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class UserControllerTest {
-    private static UserController userController;
+    private UserStorage userStorage;
+    private UserController userController;
     private User user;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        userStorage = new InMemoryUserStorage();
+        userController = new UserController(new UserService(userStorage));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
         init();
     }
@@ -35,24 +43,25 @@ public class UserControllerTest {
     void addUser() {
         userController.createUser(user.toBuilder().build());
 
-        assertEquals(1, userController.getAllUsers().size(), "Неверное количество пользователей");
-        assertEquals(user, userController.getAllUsers().get(0), "Пользователь добавлен некорректно");
+        assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
+        assertEquals(user, userStorage.getAllUsers().get(0), "Пользователь добавлен некорректно");
     }
 
     @Test
     void updateUser() {
-        userController.createUser(user.toBuilder().build());
+        User user1 = user.toBuilder().id(1).build();
+        userStorage.addUser(user1);
 
-        User user1 = user.toBuilder()
+        User user2 = user.toBuilder()
                 .id(1)
                 .login("Новый логин")
                 .name("Новое Имя")
                 .build();
 
-        userController.updateUser(user1.toBuilder().build());
+        userController.updateUser(user2.toBuilder().build());
 
-        assertEquals(1, userController.getAllUsers().size(), "Неверное количество пользователей");
-        assertEquals(user1, userController.getAllUsers().get(0), "Пользователь обновлён некорректно");
+        assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
+        assertEquals(user2, userStorage.getAllUsers().get(0), "Пользователь обновлён некорректно");
     }
 
     @Test
@@ -168,6 +177,71 @@ public class UserControllerTest {
         });
         assertEquals("Дата рождения не может быть в будущем", validationException.getMessage(),
                 "Некорректная валидация даты рождения пользователя");
+    }
+
+    @Test
+    void addFriend() {
+        User user1 = user.toBuilder().id(1).build();
+        userStorage.addUser(user1);
+        User user2 = user.toBuilder().id(2).build();
+        userStorage.addUser(user2);
+
+        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+
+        assertEquals(1, userStorage.getUserById(user1.getId()).getFriends().size(),
+                "Количество друзей не совпадает с ожидаемым.");
+        assertEquals(1, userStorage.getUserById(user2.getId()).getFriends().size(),
+                "Количество друзей не совпадает с ожидаемым.");
+        assertEquals(1, new ArrayList<>(userStorage.getUserById(user2.getId()).getFriends()).get(0));
+        assertEquals(2, new ArrayList<>(userStorage.getUserById(user1.getId()).getFriends()).get(0));
+    }
+
+    @Test
+    void deleteFriend() {
+        User user1 = user.toBuilder().id(1).build();
+        userStorage.addUser(user1);
+        User user2 = user.toBuilder().id(2).build();
+        userStorage.addUser(user2);
+
+        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userController.deleteFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+
+        assertEquals(0, userStorage.getUserById(user1.getId()).getFriends().size(),
+                "Количество друзей не совпадает с ожидаемым.");
+        assertEquals(0, userStorage.getUserById(user2.getId()).getFriends().size(),
+                "Количество друзей не совпадает с ожидаемым.");
+    }
+
+    @Test
+    void getFriendsById() {
+        User user1 = user.toBuilder().id(1).build();
+        userStorage.addUser(user1);
+        User user2 = user.toBuilder().id(2).build();
+        userStorage.addUser(user2);
+
+        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        List<User> friends = userController.getFriendsById(Optional.of(user1.getId()));
+
+        assertEquals(1, friends.size());
+        assertEquals(user2, friends.get(0));
+    }
+
+    @Test
+    void getMutualFriendsById() {
+        User user1 = user.toBuilder().id(1).build();
+        userStorage.addUser(user1);
+        User user2 = user.toBuilder().id(2).build();
+        userStorage.addUser(user2);
+        User user3 = user.toBuilder().id(3).build();
+        userStorage.addUser(user3);
+
+        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userController.addFriend(Optional.of(user1.getId()), Optional.of(user3.getId()));
+        userController.addFriend(Optional.of(user2.getId()), Optional.of(user3.getId()));
+        List<User> friends = userController.getMutualFriendsById(Optional.of(user1.getId()), Optional.of(user2.getId()));
+
+        assertEquals(1, friends.size());
+        assertEquals(user3, friends.get(0));
     }
 
     private void init() {

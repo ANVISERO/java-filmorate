@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
@@ -13,6 +17,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,13 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class FilmControllerTest {
-    private static FilmController filmController;
+    private FilmController filmController;
+    private FilmStorage filmStorage;
     private Film film;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        filmStorage = new InMemoryFilmStorage();
+        filmController = new FilmController(new FilmService(filmStorage));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
         init();
     }
@@ -35,8 +44,8 @@ public class FilmControllerTest {
     void addFilm() {
         filmController.addFilm(film.toBuilder().build());
 
-        assertEquals(1, filmController.getAllFilms().size(), "Неверное количество фильмов");
-        assertEquals(film, filmController.getAllFilms().get(0), "Фильм добавлен некорректно");
+        assertEquals(1, filmStorage.getAllFilms().size(), "Неверное количество фильмов");
+        assertEquals(film, filmStorage.getAllFilms().get(0), "Фильм добавлен некорректно");
     }
 
     @Test
@@ -51,8 +60,8 @@ public class FilmControllerTest {
 
         filmController.updateFilm(film1.toBuilder().build());
 
-        assertEquals(1, filmController.getAllFilms().size(), "Неверное количество фильмов");
-        assertEquals(film1, filmController.getAllFilms().get(0), "Фильм обновлён некорректно");
+        assertEquals(1, filmStorage.getAllFilms().size(), "Неверное количество фильмов");
+        assertEquals(film1, filmStorage.getAllFilms().get(0), "Фильм обновлён некорректно");
     }
 
     @Test
@@ -149,6 +158,46 @@ public class FilmControllerTest {
         });
         assertEquals("Продолжительность фильма должна быть положительной", validationException.getMessage(),
                 "Некорректная валидация продолжительности фильма");
+    }
+
+    @Test
+    void addLike() {
+        Film film1 = film.toBuilder().id(1).build();
+        filmStorage.addFilm(film1);
+
+        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
+
+        assertEquals(1, filmStorage.getFilmById(film1.getId()).getLikes().size(),
+                "Количество лайков не совпадает с ожидаемым.");
+        assertEquals(1, new ArrayList<>(filmStorage.getFilmById(film1.getId()).getLikes()).get(0));
+    }
+
+    @Test
+    void deleteLike() {
+        Film film1 = film.toBuilder().id(1).build();
+        filmStorage.addFilm(film1);
+
+        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
+        filmController.deleteLike(Optional.of(film1.getId()), Optional.of(1));
+
+        assertEquals(0, filmStorage.getFilmById(film1.getId()).getLikes().size(),
+                "Количество лайков не совпадает с ожидаемым.");
+    }
+
+    @Test
+    void getFilmsByCount() {
+        Film film1 = film.toBuilder().id(1).build();
+        filmStorage.addFilm(film1);
+
+        Film film2 = film.toBuilder().id(2).build();
+        filmStorage.addFilm(film2);
+
+        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
+        filmController.addLike(Optional.of(film1.getId()), Optional.of(2));
+        filmController.addLike(Optional.of(film1.getId()), Optional.of(3));
+        filmController.addLike(Optional.of(film2.getId()), Optional.of(1));
+
+        assertEquals(film1, filmController.getFilmsByCount(1).get(0));
     }
 
     private void init() {
