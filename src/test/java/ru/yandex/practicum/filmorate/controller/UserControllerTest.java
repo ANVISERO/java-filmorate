@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
@@ -25,18 +26,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserControllerTest {
-    private UserStorage userStorage;
-    private UserController userController;
+    private final UserStorage userStorage;
+    private final UserController userController;
     private User user;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        userStorage = new InMemoryUserStorage();
-        userController = new UserController(new UserService(userStorage));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
         init();
+    }
+
+    @AfterEach
+    void reset() {
+        userStorage.deleteStorage();
     }
 
     @Test

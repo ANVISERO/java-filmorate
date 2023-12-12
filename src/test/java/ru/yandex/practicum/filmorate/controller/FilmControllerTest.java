@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
@@ -24,18 +25,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmControllerTest {
-    private FilmController filmController;
-    private FilmStorage filmStorage;
+    private final FilmController filmController;
+    private final FilmStorage filmStorage;
     private Film film;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        filmStorage = new InMemoryFilmStorage();
-        filmController = new FilmController(new FilmService(filmStorage));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
         init();
+    }
+
+    @AfterEach
+    void reset() {
+        filmStorage.deleteStorage();
     }
 
     @Test
@@ -48,7 +53,7 @@ public class FilmControllerTest {
 
     @Test
     void updateFilm() {
-        filmController.addFilm(film.toBuilder().build());
+        filmStorage.addFilm(film.toBuilder().id(1).build());
 
         Film film1 = film.toBuilder()
                 .id(1)

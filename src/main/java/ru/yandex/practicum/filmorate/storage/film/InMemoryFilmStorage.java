@@ -47,4 +47,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(id).toBuilder().build();
     }
+
+    @Override
+    public void deleteStorage() {
+        films.clear();
+    }
 }

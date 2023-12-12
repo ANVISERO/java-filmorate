@@ -54,4 +54,9 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("{} {}",users.get(id), InMemoryUserStorage.class);
         return users.get(id).toBuilder().build();
     }
+
+    @Override
+    public void deleteStorage() {
+        users.clear();
+    }
 }
