@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
@@ -26,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserControllerTest {
+    private final UserService userService;
     private final UserStorage userStorage;
-    private final UserController userController;
     private User user;
     private Validator validator;
 
@@ -46,7 +47,7 @@ public class UserControllerTest {
 
     @Test
     void addUser() {
-        userController.createUser(user.toBuilder().build());
+        userService.createUser(user.toBuilder().build());
 
         assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
         assertEquals(user, userStorage.getAllUsers().get(0), "Пользователь добавлен некорректно");
@@ -63,7 +64,7 @@ public class UserControllerTest {
                 .name("Новое Имя")
                 .build();
 
-        userController.updateUser(user2.toBuilder().build());
+        userService.updateUser(user2.toBuilder().build());
 
         assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
         assertEquals(user2, userStorage.getAllUsers().get(0), "Пользователь обновлён некорректно");
@@ -191,7 +192,7 @@ public class UserControllerTest {
         User user2 = user.toBuilder().id(2).build();
         userStorage.addUser(user2);
 
-        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
 
         assertEquals(1, userStorage.getUserById(user1.getId()).getFriends().size(),
                 "Количество друзей не совпадает с ожидаемым.");
@@ -208,8 +209,8 @@ public class UserControllerTest {
         User user2 = user.toBuilder().id(2).build();
         userStorage.addUser(user2);
 
-        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        userController.deleteFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userService.deleteFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
 
         assertEquals(0, userStorage.getUserById(user1.getId()).getFriends().size(),
                 "Количество друзей не совпадает с ожидаемым.");
@@ -224,8 +225,8 @@ public class UserControllerTest {
         User user2 = user.toBuilder().id(2).build();
         userStorage.addUser(user2);
 
-        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        List<User> friends = userController.getFriendsById(Optional.of(user1.getId()));
+        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        List<User> friends = userService.getFriendsById(Optional.of(user1.getId()));
 
         assertEquals(1, friends.size());
         assertEquals(user2, friends.get(0));
@@ -240,10 +241,10 @@ public class UserControllerTest {
         User user3 = user.toBuilder().id(3).build();
         userStorage.addUser(user3);
 
-        userController.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        userController.addFriend(Optional.of(user1.getId()), Optional.of(user3.getId()));
-        userController.addFriend(Optional.of(user2.getId()), Optional.of(user3.getId()));
-        List<User> friends = userController.getMutualFriendsById(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
+        userService.addFriend(Optional.of(user1.getId()), Optional.of(user3.getId()));
+        userService.addFriend(Optional.of(user2.getId()), Optional.of(user3.getId()));
+        List<User> friends = userService.getMutualFriendsById(Optional.of(user1.getId()), Optional.of(user2.getId()));
 
         assertEquals(1, friends.size());
         assertEquals(user3, friends.get(0));

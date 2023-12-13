@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
@@ -25,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FilmControllerTest {
-    private final FilmController filmController;
+    private final FilmService filmService;
     private final FilmStorage filmStorage;
     private Film film;
     private Validator validator;
@@ -45,7 +46,7 @@ public class FilmControllerTest {
 
     @Test
     void addFilm() {
-        filmController.addFilm(film.toBuilder().build());
+        filmService.addFilm(film.toBuilder().build());
 
         assertEquals(1, filmStorage.getAllFilms().size(), "Неверное количество фильмов");
         assertEquals(film, filmStorage.getAllFilms().get(0), "Фильм добавлен некорректно");
@@ -61,7 +62,7 @@ public class FilmControllerTest {
                 .description("Новое описание")
                 .build();
 
-        filmController.updateFilm(film1.toBuilder().build());
+        filmService.updateFilm(film1.toBuilder().build());
 
         assertEquals(1, filmStorage.getAllFilms().size(), "Неверное количество фильмов");
         assertEquals(film1, filmStorage.getAllFilms().get(0), "Фильм обновлён некорректно");
@@ -168,7 +169,7 @@ public class FilmControllerTest {
         Film film1 = film.toBuilder().id(1).build();
         filmStorage.addFilm(film1);
 
-        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
+        filmService.addLike(Optional.of(film1.getId()), Optional.of(1));
 
         assertEquals(1, filmStorage.getFilmById(film1.getId()).getLikes().size(),
                 "Количество лайков не совпадает с ожидаемым.");
@@ -180,8 +181,8 @@ public class FilmControllerTest {
         Film film1 = film.toBuilder().id(1).build();
         filmStorage.addFilm(film1);
 
-        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
-        filmController.deleteLike(Optional.of(film1.getId()), Optional.of(1));
+        filmService.addLike(Optional.of(film1.getId()), Optional.of(1));
+        filmService.deleteLike(Optional.of(film1.getId()), Optional.of(1));
 
         assertEquals(0, filmStorage.getFilmById(film1.getId()).getLikes().size(),
                 "Количество лайков не совпадает с ожидаемым.");
@@ -195,12 +196,12 @@ public class FilmControllerTest {
         Film film2 = film.toBuilder().id(2).build();
         filmStorage.addFilm(film2);
 
-        filmController.addLike(Optional.of(film1.getId()), Optional.of(1));
-        filmController.addLike(Optional.of(film1.getId()), Optional.of(2));
-        filmController.addLike(Optional.of(film1.getId()), Optional.of(3));
-        filmController.addLike(Optional.of(film2.getId()), Optional.of(1));
+        filmService.addLike(Optional.of(film1.getId()), Optional.of(1));
+        filmService.addLike(Optional.of(film1.getId()), Optional.of(2));
+        filmService.addLike(Optional.of(film1.getId()), Optional.of(3));
+        filmService.addLike(Optional.of(film2.getId()), Optional.of(1));
 
-        assertEquals(film1, filmController.getFilmsByCount(1).get(0));
+        assertEquals(film1, filmService.getFilmsByCount(1).get(0));
     }
 
     private void init() {
