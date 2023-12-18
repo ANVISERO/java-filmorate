@@ -53,23 +53,23 @@ public class FilmController {
     }
 
     @PutMapping(path = "/{id}/like/{userId}")
-    public Film addLike(
+    public boolean addLike(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "userId") final Optional<Integer> userId) {
         log.info("Пришёл запрос на добавление лайка фильму.");
-        Film film = filmService.addLike(id, userId);
+        boolean isLike = filmService.addLike(id, userId);
         log.info("Добавление лайка фильму пошло успешно.");
-        return film;
+        return isLike;
     }
 
     @DeleteMapping(path = "/{id}/like/{userId}")
-    public Film deleteLike(
+    public boolean deleteLike(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "userId") final Optional<Integer> userId) {
         log.info("Пришёл запрос на удаление лайка фильму.");
-        Film film = filmService.deleteLike(id, userId);
+        boolean isLikeDeleted = filmService.deleteLike(id, userId);
         log.info("Удаление лайка фильму пошло успешно.");
-        return film;
+        return isLikeDeleted;
     }
 
     @GetMapping(path = "/popular")

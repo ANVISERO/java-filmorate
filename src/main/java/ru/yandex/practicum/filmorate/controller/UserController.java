@@ -56,23 +56,25 @@ public class UserController {
     }
 
     @PutMapping(path = "/{id}/friends/{friendId}")
-    public void addFriend(
+    public boolean addFriend(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "friendId") final Optional<Integer> friendId) {
         log.info("Пришёл запрос на добавление в друзья пользователя");
-        userService.addFriend(id, friendId);
+        boolean isFriend = userService.addFriend(id, friendId);
         log.info("Запрос на добавление в друзья пользователя прошёл успешно. " +
                 "Теперь пользователи с уникальными идентификаторами {} и {} друзья", id.get(), friendId.get());
+        return isFriend;
     }
 
     @DeleteMapping(path = "/{id}/friends/{friendId}")
-    public void deleteFriend(
+    public boolean deleteFriend(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "friendId") final Optional<Integer> friendId) {
         log.info("Пришёл запрос на удаление из друзей пользователя");
-        userService.deleteFriend(id, friendId);
+        boolean isDeleted = userService.deleteFriend(id, friendId);
         log.info("Запрос на удаление из друзей прошёл успешно. Теперь пользователи с уникальными идентификаторами" +
                 " {} и {} не являются друзьями", id.get(), friendId.get());
+        return isDeleted;
     }
 
     @GetMapping("/{id}/friends")

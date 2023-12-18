@@ -15,4 +15,14 @@ public interface UserStorage {
     User getUserById(Integer id);
 
     void deleteStorage();
+
+    boolean findUserById(Integer id);
+
+    boolean addFriend(Integer userId, Integer friendId);
+
+    boolean deleteFriend(Integer userId, Integer friendId);
+
+    List<User> getFriendsById(Integer userId);
+
+    List<User> getMutualFriendsById(Integer userId, Integer otherUserId);
 }

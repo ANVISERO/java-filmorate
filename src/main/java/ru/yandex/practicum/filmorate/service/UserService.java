@@ -7,13 +7,13 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private int userId = 0;
     private final UserStorage userStorage;
 
     public User createUser(User user) {
@@ -21,7 +21,7 @@ public class UserService {
             log.info("У пользователя с идентификатором {} пустое имя", user.getId());
             user = user.toBuilder().name(user.getLogin()).build();
         }
-        return userStorage.addUser(user.toBuilder().id(generateUserId()).build());
+        return userStorage.addUser(user);
     }
 
     public User updateUser(User user) {
@@ -46,7 +46,7 @@ public class UserService {
         return userStorage.getUserById(userId);
     }
 
-    public void addFriend(final Optional<Integer> id, final Optional<Integer> friendIdOptional) {
+    public boolean addFriend(final Optional<Integer> id, final Optional<Integer> friendIdOptional) {
         if (id.isEmpty()) {
             log.warn("Попытка запроса на дружбу от пользователя с пустым уникальным идентификатором");
             throw new NotFoundException("Уникальный идентификатор пользователя не может быть пустым");
@@ -67,25 +67,10 @@ public class UserService {
             throw new NotFoundException(
                     "Уникальный идентификатор пользователя не может быть отрицательным или равным нулю");
         }
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        if (!user.addFriend(friendId)) {
-            log.warn("Попытка добавить в друзья пользователя повторно. " +
-                    "У пользователя с id = {} уже есть в друзьях пользователь с id = {}", userId, friendId);
-            throw new RuntimeException("Попытка добавить в друзья пользователя повторно. " +
-                    "У пользователя с id = " + userId + " уже есть в друзьях пользователь с id = " + friendId);
-        }
-        if (!friend.addFriend(userId)) {
-            log.warn("Попытка добавить в друзья пользователя повторно. " +
-                    "У пользователя с id = {} уже есть в друзьях пользователь с id = {}", friendId, userId);
-            throw new RuntimeException("Попытка добавить в друзья пользователя повторно. " +
-                    "У пользователя с id = " + friendId + " уже есть в друзьях пользователь с id = " + userId);
-        }
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
+        return userStorage.addFriend(userId, friendId);
     }
 
-    public void deleteFriend(final Optional<Integer> id, final Optional<Integer> friendIdOptional) {
+    public boolean deleteFriend(final Optional<Integer> id, final Optional<Integer> friendIdOptional) {
         if (id.isEmpty()) {
             log.warn("Попытка прекратить дружбу от пользователя с пустым уникальным идентификатором");
             throw new NotFoundException("Уникальный идентификатор пользователя не может быть пустым");
@@ -106,20 +91,7 @@ public class UserService {
             throw new NotFoundException(
                     "Уникальный идентификатор пользователя не может быть отрицательным или равным нулю");
         }
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        if (!user.deleteFriend(friendId)) {
-            log.warn("Попытка удалить из друзей пользователя повторно. " +
-                    "Пользователь с id = {} не дружит с пользователем с id = {}", userId, friendId);
-            throw new RuntimeException("Попытка удалить из друзей пользователя повторно. " +
-                    "Пользователь с id = " + userId + " не дружит с пользователем с id = " + friendId);
-        }
-        if (!friend.deleteFriend(userId)) {
-            log.warn("Попытка удалить из друзей пользователя повторно. " +
-                    "Пользователь с id = {} не дружит с пользователем с id = {}", friendId, userId);
-            throw new RuntimeException("Попытка удалить из друзей пользователя повторно. " +
-                    "Пользователь с id = " + friendId + " не дружит с пользователем с id = " + userId);
-        }
+        return userStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriendsById(final Optional<Integer> id) {
@@ -133,14 +105,7 @@ public class UserService {
             throw new NotFoundException("Уникальный идентификатор пользователя не может быть отрицательным " +
                     "или равным нулю");
         }
-        List<User> users = new ArrayList<>();
-        User user = userStorage.getUserById(userId);
-        log.info("{} {}", user, UserService.class);
-        for (Integer i : user.getFriends()) {
-            users.add(userStorage.getUserById(i));
-        }
-        log.info("{} {}", users, UserService.class);
-        return users;
+        return userStorage.getFriendsById(userId);
     }
 
     public List<User> getMutualFriendsById(final Optional<Integer> id, final Optional<Integer> otherId) {
@@ -165,17 +130,6 @@ public class UserService {
             throw new NotFoundException(
                     "Уникальный идентификатор пользователя не может быть отрицательным или равным нулю");
         }
-        Set<Integer> mutualIds = new HashSet<>(userStorage.getUserById(userId).getFriends());
-        mutualIds.retainAll(userStorage.getUserById(otherUserId).getFriends());
-        List<User> users = new ArrayList<>();
-        for (Integer i : mutualIds) {
-            users.add(userStorage.getUserById(i));
-        }
-        return users;
+        return userStorage.getMutualFriendsById(userId, otherUserId);
     }
-
-    private int generateUserId() {
-        return ++userId;
-    }
-
 }

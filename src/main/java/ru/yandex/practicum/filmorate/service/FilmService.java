@@ -7,20 +7,17 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private int filmId = 0;
     private final FilmStorage filmStorage;
 
     public Film addFilm(Film film) {
-        return filmStorage.addFilm(film.toBuilder().id(generateFilmId()).build());
+        return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
@@ -44,7 +41,7 @@ public class FilmService {
         return filmStorage.getFilmById(filmId);
     }
 
-    public Film addLike(final Optional<Integer> id, final Optional<Integer> userIdOptional) {
+    public boolean addLike(final Optional<Integer> id, final Optional<Integer> userIdOptional) {
         if (id.isEmpty()) {
             log.warn("Попытка поставить лайк фильму с пустым уникальным идентификатором");
             throw new NotFoundException("Уникальный идентификатор фильма не может быть пустым");
@@ -64,15 +61,10 @@ public class FilmService {
             throw new NotFoundException(
                     "Уникальный идентификатор пользователя не может быть отрицательным или равным нулю");
         }
-        Film film = filmStorage.getFilmById(filmId);
-        if (!film.addLike(userId)) {
-            log.warn("Попытка пользователя с id = {} поставить лайк фильма второй раз.", userId);
-            throw new RuntimeException("Недопустимо ставить больше одного лайка фильму");
-        }
-        return filmStorage.updateFilm(film);
+        return filmStorage.addLike(filmId, userId);
     }
 
-    public Film deleteLike(final Optional<Integer> id, final Optional<Integer> userIdOptional) {
+    public boolean deleteLike(final Optional<Integer> id, final Optional<Integer> userIdOptional) {
         if (id.isEmpty()) {
             log.warn("Попытка удалить лайк с фильма с пустым уникальным идентификатором");
             throw new NotFoundException("Уникальный идентификатор фильма не может быть пустым");
@@ -92,12 +84,7 @@ public class FilmService {
             throw new NotFoundException(
                     "Уникальный идентификатор пользователя не может быть отрицательным или равным нулю");
         }
-        Film film = filmStorage.getFilmById(filmId);
-        if (!film.deleteLike(userId)) {
-            log.warn("Попытка пользователя с id = {} удалить лайк с фильма, на котором нет лайков.", userId);
-            throw new RuntimeException("Недопустимо удалять лайк с фильма, на котором нет лайков.");
-        }
-        return filmStorage.updateFilm(film);
+        return filmStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> getFilmsByCount(Integer count) {
@@ -109,12 +96,6 @@ public class FilmService {
         if (films.size() < count) {
             count = films.size();
         }
-        return films.stream()
-                .sorted(Comparator.comparing((film) -> -1 * film.getLikes().size()))
-                .limit(count).collect(Collectors.toList());
-    }
-
-    private int generateFilmId() {
-        return ++filmId;
+        return filmStorage.getFilmsByCount(count);
     }
 }

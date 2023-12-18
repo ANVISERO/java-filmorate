@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         if (!films.containsKey(film.getId())) {
             log.warn("Фильм с идентификатором {} не существует!", film.getId());
-            throw new ValidationException("Фильм с идентификатором " + film.getId() + " не существует!");
+            throw new NotFoundException("Фильм с идентификатором " + film.getId() + " не существует!");
         }
         films.put(film.getId(), film);
         log.info("Обновлённый фильм добавлен в хранилище. {}", film);
@@ -51,5 +50,20 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void deleteStorage() {
         films.clear();
+    }
+
+    @Override
+    public boolean addLike(Integer filmId, Integer userId) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteLike(Integer filmId, Integer userId) {
+        return false;
+    }
+
+    @Override
+    public List<Film> getFilmsByCount(Integer count) {
+        return null;
     }
 }

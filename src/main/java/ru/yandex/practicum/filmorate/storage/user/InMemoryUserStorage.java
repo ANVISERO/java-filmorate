@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
+@Qualifier(value = "InMemoryFilmStorage")
 public class InMemoryUserStorage implements UserStorage {
     private static Map<Integer, User> users = new HashMap<>();
 
@@ -31,7 +32,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(User user) {
         if (!users.containsKey(user.getId())) {
             log.warn("Пользователь с идентификатором {} не существует!", user.getId());
-            throw new ValidationException("Фильм с идентификатором " + user.getId() + " не существует!");
+            throw new NotFoundException("Пользователь с идентификатором " + user.getId() + " не существует!");
         }
         log.info("{}", users);
         users.put(user.getId(), user);
@@ -58,5 +59,30 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void deleteStorage() {
         users.clear();
+    }
+
+    @Override
+    public boolean findUserById(Integer id) {
+        return false;
+    }
+
+    @Override
+    public boolean addFriend(Integer userId, Integer friendId) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteFriend(Integer userId, Integer friendId) {
+        return false;
+    }
+
+    @Override
+    public List<User> getFriendsById(Integer userId) {
+        return null;
+    }
+
+    @Override
+    public List<User> getMutualFriendsById(Integer userId, Integer otherUserId) {
+        return null;
     }
 }
