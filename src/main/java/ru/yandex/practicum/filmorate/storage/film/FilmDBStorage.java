@@ -37,7 +37,7 @@ public class FilmDBStorage implements FilmStorage {
                 .usingGeneratedKeyColumns("id");
         int id = insert.executeAndReturnKey(filmToMap(film)).intValue();
         if (!film.getGenres().isEmpty()) {
-            log.info("Обновление жанров");
+            log.debug("Обновление жанров");
             genreStorage.updateFilmGenres(id, new HashSet<>(film.getGenres()));
         }
         return film.toBuilder().id(id).build();
@@ -65,7 +65,7 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        sql = "SELECT f.*, m.name " +
+        sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name " +
                 "FROM films AS f " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.id";
         return jdbcTemplate.query(sql, getFilmMapper());
@@ -77,7 +77,7 @@ public class FilmDBStorage implements FilmStorage {
             log.warn("Фильм с идентификатором {} не существует!", id);
             throw new NotFoundException("Фильм с идентификатором " + id + " не существует!");
         }
-        sql = "SELECT f.*, m.name " +
+        sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name " +
                 "FROM films AS f " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.id " +
                 "WHERE f.id = ?";
@@ -123,7 +123,8 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmsByCount(Integer count) {
-        sql = "SELECT f.*, m.name, COUNT(l.user_id) AS amount_of_likes " +
+        sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name, " +
+                "COUNT(l.user_id) AS amount_of_likes " +
                 "FROM films AS f " +
                 "LEFT JOIN likes AS l ON f.id = l.film_id " +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.id " +

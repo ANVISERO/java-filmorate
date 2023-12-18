@@ -24,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new RuntimeException("Пользователь с id = " + user.getId() + " уже существует");
         }
         users.put(user.getId(), user);
-        log.info("Пользователь добавлен в хранилище. {}", user);
+        log.debug("Пользователь добавлен в хранилище. {}", user);
         return user.toBuilder().build();
     }
 
@@ -34,10 +34,8 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", user.getId());
             throw new NotFoundException("Пользователь с идентификатором " + user.getId() + " не существует!");
         }
-        log.info("{}", users);
         users.put(user.getId(), user);
-        log.info("{}", users);
-        log.info("Обновлённый пользователь добавлен в хранилище. {}", user);
+        log.debug("Обновлённый пользователь добавлен в хранилище. {}", user);
         return user.toBuilder().build();
     }
 
@@ -52,7 +50,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", id);
             throw new NotFoundException("Пользователь с идентификатором " + id + " не существует!");
         }
-        log.info("{} {}", users.get(id), InMemoryUserStorage.class);
+        log.debug("{} {}", users.get(id), InMemoryUserStorage.class);
         return users.get(id).toBuilder().build();
     }
 

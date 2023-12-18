@@ -29,7 +29,7 @@ public class GenreDBStorage implements GenreStorage {
 
     @Override
     public List<Genre> getAllGenres() {
-        sql = "SELECT * FROM genres";
+        sql = "SELECT id, name FROM genres";
         return jdbcTemplate.query(sql, getGenreMapper());
     }
 
@@ -39,14 +39,14 @@ public class GenreDBStorage implements GenreStorage {
             log.warn("Жанр с идентификатором {} не существует!", id);
             throw new NotFoundException("Жанр с идентификатором " + id + " не существует!");
         }
-        sql = "SELECT * FROM genres " +
+        sql = "SELECT id, name FROM genres " +
                 "WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, getGenreMapper(), id);
     }
 
     @Override
     public List<Genre> getGenresByFilmId(Integer filmId) {
-        sql = "SELECT g.* " +
+        sql = "SELECT g.id, g.name " +
                 "FROM genres AS g " +
                 "JOIN film_genre AS fg ON g.id = fg.genre_id " +
                 "WHERE fg.film_id = ?";
@@ -64,7 +64,7 @@ public class GenreDBStorage implements GenreStorage {
         sql = "DELETE FROM film_genre " +
                 "WHERE film_id = ?";
         jdbcTemplate.update(sql, filmId);
-        log.info("Все жанры были удалены");
+        log.debug("Все жанры были удалены");
     }
 
     @Override
@@ -78,7 +78,6 @@ public class GenreDBStorage implements GenreStorage {
                 Genre genre = genreList.get(i);
                 ps.setInt(1, filmId);
                 ps.setInt(2, genre.getId());
-                log.info("{}", genre.getId());
             }
 
             @Override
@@ -86,7 +85,7 @@ public class GenreDBStorage implements GenreStorage {
                 return genreList.size();
             }
         });
-        log.info("Все жанры фильма были записаны заново");
+        log.debug("Все жанры фильма были записаны заново");
     }
 
     private boolean findGenreById(Integer id) {

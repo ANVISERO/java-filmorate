@@ -24,7 +24,7 @@ public class MPADBStorage implements MPAStorage {
 
     @Override
     public List<MPA> getAllMPAs() {
-        sql = "SELECT * FROM mpa";
+        sql = "SELECT id, name, description FROM mpa";
         return jdbcTemplate.query(sql, getMPAMapper());
     }
 
@@ -34,7 +34,7 @@ public class MPADBStorage implements MPAStorage {
             log.warn("MPA с идентификатором {} не существует!", id);
             throw new NotFoundException("MPA с идентификатором " + id + " не существует!");
         }
-        sql = "SELECT * FROM mpa " +
+        sql = "SELECT id, name, description FROM mpa " +
                 "WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, getMPAMapper(), id);
     }

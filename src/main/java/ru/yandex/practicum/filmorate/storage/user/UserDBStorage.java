@@ -53,7 +53,7 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public List<User> getAllUsers() {
-        sql = "SELECT * FROM users";
+        sql = "SELECT id, email, login, name, birthday FROM users";
         return jdbcTemplate.query(sql, getUserMapper());
     }
 
@@ -63,7 +63,7 @@ public class UserDBStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", id);
             throw new NotFoundException("Пользователь с идентификатором " + id + " не существует!");
         }
-        sql = "SELECT * " +
+        sql = "SELECT id, email, login, name, birthday " +
                 "FROM users " +
                 "WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, getUserMapper(), id);
@@ -119,7 +119,7 @@ public class UserDBStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", userId);
             throw new NotFoundException("Пользователь с идентификатором " + userId + " не существует!");
         }
-        sql = "SELECT u.* " +
+        sql = "SELECT u.id, u.email, u.login, u.name, u.birthday " +
                 "FROM friendship AS f " +
                 "JOIN users AS u ON f.another_user_id = u.id " +
                 "WHERE user_id = ?";
@@ -136,7 +136,7 @@ public class UserDBStorage implements UserStorage {
             log.warn("Пользователь с идентификатором {} не существует!", otherUserId);
             throw new NotFoundException("Пользователь с идентификатором " + otherUserId + " не существует!");
         }
-        sql = "SELECT u.* " +
+        sql = "SELECT u.id, u.email, u.login, u.name, u.birthday " +
                 "FROM friendship f1 " +
                 "JOIN friendship f2 ON f1.another_user_id = f2.another_user_id " +
                 "JOIN users AS u ON f1.another_user_id = u.id " +

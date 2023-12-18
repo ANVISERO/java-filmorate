@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         films.put(film.getId(), film);
-        log.info("Фильм добавлен в хранилище. {}", film);
+        log.debug("Фильм добавлен в хранилище. {}", film);
         return film.toBuilder().build();
     }
 
@@ -29,7 +29,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильм с идентификатором " + film.getId() + " не существует!");
         }
         films.put(film.getId(), film);
-        log.info("Обновлённый фильм добавлен в хранилище. {}", film);
+        log.debug("Обновлённый фильм добавлен в хранилище. {}", film);
         return film.toBuilder().build();
     }
 

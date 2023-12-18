@@ -18,7 +18,7 @@ public class UserService {
 
     public User createUser(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
-            log.info("У пользователя с идентификатором {} пустое имя", user.getId());
+            log.debug("У пользователя с идентификатором {} пустое имя", user.getId());
             user = user.toBuilder().name(user.getLogin()).build();
         }
         return userStorage.addUser(user);

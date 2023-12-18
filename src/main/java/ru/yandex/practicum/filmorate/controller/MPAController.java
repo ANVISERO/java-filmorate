@@ -21,17 +21,17 @@ public class MPAController {
 
     @GetMapping
     public List<MPA> getAllMPAs() {
-        log.info("Пришёл запрос на получение всех mpa");
+        log.debug("Пришёл запрос на получение всех mpa");
         List<MPA> mpas = mpaService.getAllMPAs();
-        log.info("Получение всех mpa прошло успешно. Получено mpa: ({})", mpas.size());
+        log.debug("Получение всех mpa прошло успешно. Получено mpa: ({})", mpas.size());
         return mpas;
     }
 
     @GetMapping(path = "/{id}")
     public MPA getFilmById(@PathVariable(name = "id") final Optional<Integer> id) {
-        log.info("Пришёл запрос на получение mpa по уникальному идентификатору.");
+        log.debug("Пришёл запрос на получение mpa по уникальному идентификатору.");
         MPA mpa = mpaService.getMPAById(id);
-        log.info("Получение mpa по уникальному идентификатору прошло успешно. Получен mpa: {}", mpa);
+        log.debug("Получение mpa по уникальному идентификатору прошло успешно. Получен mpa: {}", mpa);
         return mpa;
     }
 }
