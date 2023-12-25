@@ -22,62 +22,62 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Validated({OnCreate.class, Default.class}) @RequestBody Film film) {
-        log.info("Пришёл запрос на добавление фильма {}", film);
+        log.debug("Пришёл запрос на добавление фильма {}", film);
         Film newFilm = filmService.addFilm(film);
-        log.info("Добавление нового фильма прошло успешно. Добавленный фильм: {}", newFilm);
+        log.debug("Добавление нового фильма прошло успешно. Добавленный фильм: {}", newFilm);
         return newFilm;
     }
 
     @PutMapping
     public Film updateFilm(@Validated({OnUpdate.class, Default.class}) @RequestBody Film film) {
-        log.info("Пришёл запрос на обновление фильма {}", film);
+        log.debug("Пришёл запрос на обновление фильма {}", film);
         Film newFilm = filmService.updateFilm(film);
-        log.info("Обновление фильма прошло успешно. Обновлённый фильм: {}", newFilm);
+        log.debug("Обновление фильма прошло успешно. Обновлённый фильм: {}", newFilm);
         return newFilm;
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        log.info("Пришёл запрос на получение всех фильмов");
+        log.debug("Пришёл запрос на получение всех фильмов");
         List<Film> films = filmService.getAllFilms();
-        log.info("Получение всех фильмов прошло успешно. Получено фильмов: ({})", films.size());
+        log.debug("Получение всех фильмов прошло успешно. Получено фильмов: ({})", films.size());
         return films;
     }
 
     @GetMapping(path = "/{id}")
     public Film getFilmById(@PathVariable(name = "id") final Optional<Integer> id) {
-        log.info("Пришёл запрос на получение фильма по уникальному идентификатору.");
+        log.debug("Пришёл запрос на получение фильма по уникальному идентификатору.");
         Film film = filmService.getFilmById(id);
-        log.info("Получение фильма по уникальному идентификатору прошло успешно. Получен фильм: {}", film);
+        log.debug("Получение фильма по уникальному идентификатору прошло успешно. Получен фильм: {}", film);
         return film;
     }
 
     @PutMapping(path = "/{id}/like/{userId}")
-    public Film addLike(
+    public boolean addLike(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "userId") final Optional<Integer> userId) {
-        log.info("Пришёл запрос на добавление лайка фильму.");
-        Film film = filmService.addLike(id, userId);
-        log.info("Добавление лайка фильму пошло успешно.");
-        return film;
+        log.debug("Пришёл запрос на добавление лайка фильму.");
+        boolean isLike = filmService.addLike(id, userId);
+        log.debug("Добавление лайка фильму пошло успешно.");
+        return isLike;
     }
 
     @DeleteMapping(path = "/{id}/like/{userId}")
-    public Film deleteLike(
+    public boolean deleteLike(
             @PathVariable(name = "id") final Optional<Integer> id,
             @PathVariable(name = "userId") final Optional<Integer> userId) {
-        log.info("Пришёл запрос на удаление лайка фильму.");
-        Film film = filmService.deleteLike(id, userId);
-        log.info("Удаление лайка фильму пошло успешно.");
-        return film;
+        log.debug("Пришёл запрос на удаление лайка фильму.");
+        boolean isLikeDeleted = filmService.deleteLike(id, userId);
+        log.debug("Удаление лайка фильму пошло успешно.");
+        return isLikeDeleted;
     }
 
     @GetMapping(path = "/popular")
     public List<Film> getFilmsByCount(
             @RequestParam(name = "count", required = false, defaultValue = "10") final Integer count) {
-        log.info("Пришёл запрос на список из первых {} фильмов по количеству лайков.", count);
+        log.debug("Пришёл запрос на список из первых {} фильмов по количеству лайков.", count);
         List<Film> films = filmService.getFilmsByCount(count);
-        log.info("Получение списка из первых {} фильмов по количеству лайков прошло успешно.", count);
+        log.debug("Получение списка из первых {} фильмов по количеству лайков прошло успешно.", count);
         return films;
     }
 }

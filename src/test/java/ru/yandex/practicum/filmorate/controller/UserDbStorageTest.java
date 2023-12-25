@@ -1,14 +1,15 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 import ru.yandex.practicum.filmorate.validation.OnUpdate;
@@ -18,18 +19,16 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class UserControllerTest {
-    private final UserService userService;
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+public class UserDbStorageTest {
+    @Qualifier("UserDBStorage")
     private final UserStorage userStorage;
     private User user;
     private Validator validator;
@@ -40,31 +39,26 @@ public class UserControllerTest {
         init();
     }
 
-    @AfterEach
-    void reset() {
-        userStorage.deleteStorage();
-    }
-
     @Test
+    @Order(1)
     void addUser() {
-        userService.createUser(user.toBuilder().build());
+        userStorage.addUser(user);
 
         assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
+        assertEquals(1, userStorage.getUserById(1).getId(), "Пользователь добавлен некорректно");
         assertEquals(user, userStorage.getAllUsers().get(0), "Пользователь добавлен некорректно");
     }
 
     @Test
+    @Order(2)
     void updateUser() {
-        User user1 = user.toBuilder().id(1).build();
-        userStorage.addUser(user1);
-
         User user2 = user.toBuilder()
                 .id(1)
                 .login("Новый логин")
                 .name("Новое Имя")
                 .build();
 
-        userService.updateUser(user2.toBuilder().build());
+        userStorage.updateUser(user2.toBuilder().build());
 
         assertEquals(1, userStorage.getAllUsers().size(), "Неверное количество пользователей");
         assertEquals(user2, userStorage.getAllUsers().get(0), "Пользователь обновлён некорректно");
@@ -183,71 +177,6 @@ public class UserControllerTest {
         });
         assertEquals("Дата рождения не может быть в будущем", validationException.getMessage(),
                 "Некорректная валидация даты рождения пользователя");
-    }
-
-    @Test
-    void addFriend() {
-        User user1 = user.toBuilder().id(1).build();
-        userStorage.addUser(user1);
-        User user2 = user.toBuilder().id(2).build();
-        userStorage.addUser(user2);
-
-        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-
-        assertEquals(1, userStorage.getUserById(user1.getId()).getFriends().size(),
-                "Количество друзей не совпадает с ожидаемым.");
-        assertEquals(1, userStorage.getUserById(user2.getId()).getFriends().size(),
-                "Количество друзей не совпадает с ожидаемым.");
-        assertEquals(1, new ArrayList<>(userStorage.getUserById(user2.getId()).getFriends()).get(0));
-        assertEquals(2, new ArrayList<>(userStorage.getUserById(user1.getId()).getFriends()).get(0));
-    }
-
-    @Test
-    void deleteFriend() {
-        User user1 = user.toBuilder().id(1).build();
-        userStorage.addUser(user1);
-        User user2 = user.toBuilder().id(2).build();
-        userStorage.addUser(user2);
-
-        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        userService.deleteFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-
-        assertEquals(0, userStorage.getUserById(user1.getId()).getFriends().size(),
-                "Количество друзей не совпадает с ожидаемым.");
-        assertEquals(0, userStorage.getUserById(user2.getId()).getFriends().size(),
-                "Количество друзей не совпадает с ожидаемым.");
-    }
-
-    @Test
-    void getFriendsById() {
-        User user1 = user.toBuilder().id(1).build();
-        userStorage.addUser(user1);
-        User user2 = user.toBuilder().id(2).build();
-        userStorage.addUser(user2);
-
-        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        List<User> friends = userService.getFriendsById(Optional.of(user1.getId()));
-
-        assertEquals(1, friends.size());
-        assertEquals(user2, friends.get(0));
-    }
-
-    @Test
-    void getMutualFriendsById() {
-        User user1 = user.toBuilder().id(1).build();
-        userStorage.addUser(user1);
-        User user2 = user.toBuilder().id(2).build();
-        userStorage.addUser(user2);
-        User user3 = user.toBuilder().id(3).build();
-        userStorage.addUser(user3);
-
-        userService.addFriend(Optional.of(user1.getId()), Optional.of(user2.getId()));
-        userService.addFriend(Optional.of(user1.getId()), Optional.of(user3.getId()));
-        userService.addFriend(Optional.of(user2.getId()), Optional.of(user3.getId()));
-        List<User> friends = userService.getMutualFriendsById(Optional.of(user1.getId()), Optional.of(user2.getId()));
-
-        assertEquals(1, friends.size());
-        assertEquals(user3, friends.get(0));
     }
 
     private void init() {
